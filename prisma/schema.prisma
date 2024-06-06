@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                   String        @id @default(cuid())
+  name                 String
+  password             String
+  email                String        @unique
+  verificationToken    VerificationToken?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime?     @updatedAt
+  deletedAt            DateTime?     @map("deleted_at")
+  sessions             Session[]
+}
+
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String   @map("identifier") @unique
+  token      String   @unique
+  expires    DateTime
+  user       User   @relation(fields: [identifier], references: [id])
+
+  @@unique([identifier, token])
+}
