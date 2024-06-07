@@ -13,7 +13,7 @@ export const authOptions = {
         password: { label: "Password", type: "password", placeholder: "*****" },
       },
       async authorize(credentials, req) {
-        // console.log(credentials)
+        console.log(credentials)
 
         if(!credentials) {
             return null;

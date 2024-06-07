@@ -6,4 +6,6 @@ const bodySchema = z.object({
   message: z.string(),
 });
 
-// console.log(bodySchema);
+console.log(bodySchema);
+
+
