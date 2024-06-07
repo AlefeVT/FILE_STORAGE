@@ -15,18 +15,6 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id                   String        @id @default(cuid())
-  name                 String
-  password             String
-  email                String        @unique
-  verificationToken    VerificationToken?
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime?     @updatedAt
-  deletedAt            DateTime?     @map("deleted_at")
-  sessions             Session[]
-}
-
 model VerificationToken {
   id         String   @id @default(cuid())
   identifier String   @map("identifier") @unique
@@ -35,4 +23,24 @@ model VerificationToken {
   user       User   @relation(fields: [identifier], references: [id])
 
   @@unique([identifier, token])
+}
+
+model User {
+  id                   String            @id @default(cuid())
+  name                 String
+  password             String
+  email                String            @unique
+  verificationToken    VerificationToken?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime?         @updatedAt
+  deletedAt            DateTime?         @map("deleted_at")
+  sessions             Session[]
+  files                File[]
+}
+
+model File {
+  id       String   @id @default(cuid())
+  name     String
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
 }

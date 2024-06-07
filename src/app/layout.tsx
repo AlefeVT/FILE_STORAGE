@@ -4,7 +4,6 @@ import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 import { ThemeProvider } from './_components/theme-provider'
 import AuthProvider from '@/components/Providers/AuthProvider'
-import ConvexClientProvider from './ConvexClientProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,23 +20,17 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body className={inter.className}>
-        <AuthProvider>
+      <AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
 
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-
-            <ConvexClientProvider>
-              {children}
-            </ConvexClientProvider>
-
-          </ThemeProvider>
-
-          <Toaster />
-
+        <Toaster />
         </AuthProvider>
       </body>
     </html>

@@ -1,9 +1,0 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
-
-export default defineSchema({
-  files: defineTable({ name: v.string(), userId: v.string(),
-    fileId: v.id("_storage")
-  }).index("by_userId", ["userId"]),
-
-});
