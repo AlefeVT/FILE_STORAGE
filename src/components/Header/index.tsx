@@ -11,9 +11,6 @@ export function Header() {
 
   return (
     <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-gray-100/40 px-6 dark:bg-gray-800/40">
-      <div className="flex-1">
-        <h1 className="font-semibold text-lg">FILE DRIVE</h1>
-      </div>
 
       <div className="flex flex-1 items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <form className="ml-auto flex-1 sm:flex-initial w-full  flex justify-end gap-4 mr-4">
@@ -25,6 +22,7 @@ export function Header() {
             >
               <HamburgerMenuIcon className=' w-8 h-8'/>
             </button>
+            
           </div>
         </form>
         <UserDropDown user={session?.user}/>

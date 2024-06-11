@@ -3,7 +3,7 @@ import FileBrowser from "../_components/file-browser";
 export default function FilesPage() {
     return (
         <>
-            <FileBrowser title="Seus arquivos" favorites={false}/>
+            <FileBrowser title="Seus arquivos"/>
         </>
     )
 }
