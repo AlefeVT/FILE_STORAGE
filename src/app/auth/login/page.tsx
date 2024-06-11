@@ -28,7 +28,7 @@ export default function Page() {
       }
 
       if (res.ok) {
-        router.push('/app');
+        router.push('/app/files');
 
       } else {
         toast({

@@ -1,10 +1,12 @@
-import { PropsWithChildren } from 'react';
-import { ClientSideProvider } from './_components/Sidebar/ClientSideProvider';
-import { Sidebar } from './_components/Sidebar';
-import { Header } from './_components/Header';
+import { ClientSideProvider } from '../../components/Sidebar/ClientSideProvider';
+import { Sidebar } from '../../components/Sidebar';
+import { Header } from '../../components/Header';
 
-export default async function Layout({ children }: PropsWithChildren) {
-
+export default function DashboardLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <ClientSideProvider >
       <div className="flex h-screen overflow-hidden">

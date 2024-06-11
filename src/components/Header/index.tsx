@@ -2,7 +2,7 @@
 
 import { useSidebar } from "../Sidebar/ClientSideProvider";
 import { HamburgerMenuIcon } from "@radix-ui/react-icons";
-import { UserDropDown } from "../user-dropdown";
+import { UserDropDown } from "../UserDropDown/user-dropdown";
 import { useSession } from "next-auth/react";
 
 export function Header() {
