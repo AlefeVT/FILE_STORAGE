@@ -6,6 +6,7 @@ import { File } from "@/types/file-doc";
 import getFiles from "./actions";
 import { FileCard } from "./_components/file-card/file-card";
 import { UploadedButton } from "./_components/uploaded_button/uploaded_button";
+import Image from "next/image";
 
 export default function Page() {
   const { data: session, status } = useSession();
@@ -37,28 +38,50 @@ export default function Page() {
 
   const handleDeleteFile = (fileId: string) => {
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
-};
+  };
 
-  if (status === "loading" || loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <LuLoader2 className="h-10 w-10 animate-spin" />
-      </div>
-    );
-  }
+  const isLoading = loading || status === "loading";
 
   return (
-    <main className="container mx-auto pt-24">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">FILE STORAGE</h1>
-        <UploadedButton onNewFile={handleNewFile} />
-      </div>
+    <main className="container mx-auto pt-12">
+      {isLoading && (
+        <div className="flex flex-col gap-8 w-full items-center mt-32">
+          <LuLoader2 className="h-20 w-20 animate-spin text-gray-500" />
+          <div className="text-2xl">
+            Carregando seus arquivos...
+          </div>
+        </div>
+      )}
 
-      <div className="grid grid-cols-4 gap-4">
-        {files.map((file: File) => (
-          <FileCard file={file}  onDeleteFile={handleDeleteFile} />
-        ))}
-      </div>
+      {!isLoading && files && files.length === 0 && (
+        <div className="flex flex-col gap-8 w-full items-center mt-32">
+          <Image
+            alt="imagem e ícone de diretório"
+            width={300}
+            height={300}
+            src={"/empty.svg"}
+          />
+          <div className="flex flex-col gap-4">
+            <h2 className="text-2xl">Você não tem arquivos, carregue um agora.</h2>
+            <UploadedButton onNewFile={handleNewFile} />
+          </div>
+        </div>
+      )}
+
+      {!isLoading && files && files.length > 0 && (
+        <>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-xl text-gray-600">Seus arquivos</h2>
+            <UploadedButton onNewFile={handleNewFile} />
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            {files.map((file: File) => (
+              <FileCard key={file.id} file={file} onDeleteFile={handleDeleteFile} />
+            ))}
+          </div>
+        </>
+      )}
     </main>
   );
 }

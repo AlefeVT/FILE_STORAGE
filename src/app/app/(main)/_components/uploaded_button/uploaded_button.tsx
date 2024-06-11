@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
+import * as z from "zod";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LuLoader2 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,10 @@ import { createFile } from "./actions";
 
 const formSchema = z.object({
   title: z.string().min(1).max(200),
-  file: z.instanceof(File).nullable().refine((file) => file !== null, "Required"),
+  file: z
+    .instanceof(File)
+    .nullable()
+    .refine((file) => file !== null, { message: "Required" }),
 });
 
 interface UploadedButtonProps {
@@ -39,9 +42,23 @@ export function UploadedButton({ onNewFile }: UploadedButtonProps) {
     if (!values.file) return;
 
     try {
+      const fileType = values.file.type; // Obtém o tipo de arquivo completo
+      if (!fileType) throw new Error("Não foi possível determinar o tipo do arquivo");
+
+      // Verificar se o tipo de arquivo é seguro
+      const isSafeFileType = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'image/svg+xml', 'image/png', 'image/jpeg', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(fileType);
+      if (!isSafeFileType) {
+        throw new Error("Tipo de arquivo não seguro. Por favor, envie um PDF, DOC, DOCX ou TXT.");
+      }
+
+      // Converter arquivo para Base64
+      const fileBase64 = await readFileAsBase64(values.file);
+
       const newFile = await createFile({
         name: values.title,
+        type: fileType, // Salva o tipo completo do arquivo
         userId: userId!,
+        data: fileBase64,
       });
 
       form.reset();
@@ -62,6 +79,15 @@ export function UploadedButton({ onNewFile }: UploadedButtonProps) {
         description: "Seu arquivo não foi enviado, tente novamente mais tarde",
       });
     }
+  }
+
+  function readFileAsBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
   }
 
   return (
@@ -102,14 +128,16 @@ export function UploadedButton({ onNewFile }: UploadedButtonProps) {
                     <FormItem>
                       <FormLabel>Arquivo</FormLabel>
                       <FormControl>
-                        <Input
-                          type="file"
-                          {...field}
-                          onChange={(event) => {
-                            if (!event.target.files) return;
-                            onChange(event.target.files[0]);
-                          }}
-                        />
+                      <Input
+                        type="file"
+                        {...field}
+                        onChange={(event) => {
+                          if (!event.target.files) return;
+                          const uploadedFile = event.target.files[0];
+                          console.log("Tipo do arquivo:", uploadedFile.type);
+                          onChange(uploadedFile);
+                        }}
+                      />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
