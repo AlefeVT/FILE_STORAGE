@@ -1,11 +1,23 @@
 "use server"
+
 import { prisma } from "@/app/api/database/prisma";
 
-export async function createFile(fileData: { name: string; userId: string }) {
-  return prisma.file.create({
+interface CreateFileInput {
+  name: string;
+  type: string;
+  userId: string;
+  data: string; 
+}
+
+export async function createFile({ name, type, userId, data }: CreateFileInput) {
+  const binaryData = Buffer.from(data.split(",")[1], "base64"); 
+
+  return await prisma.file.create({
     data: {
-      name: fileData.name,
-      userId: fileData.userId,
+      name,
+      type,
+      userId,
+      data: binaryData,
     },
   });
 }
