@@ -3,9 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "./ClientSideProvider";
 import { DashboardSidebarHeader, DashboardSidebarMain, DashboardSidebarNav, DashboardSidebarNavHeader, DashboardSidebarNavHeaderTitle, DashboardSidebarNavLink, DashboardSidebarNavMain } from "@/components/Dashboard/sidebar";
-import { HomeIcon, MixerVerticalIcon } from "@radix-ui/react-icons";
+import { MixerVerticalIcon } from "@radix-ui/react-icons";
 import { Logo } from "@/components/Logo";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { GrDocumentText } from "react-icons/gr";
+import { IoMdStarOutline } from "react-icons/io";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -82,10 +84,16 @@ export function Sidebar() {
       <DashboardSidebarMain className="flex flex-col flex-grow">
         <DashboardSidebarNav>
           <DashboardSidebarNavMain>
-            <DashboardSidebarNavLink href="/app" active={isActive('/app')}>
-              <HomeIcon className="w-3 h-3 mr-3" />
-              Home
+            <DashboardSidebarNavLink href="/app/files" active={isActive('/app/files')}>
+              <GrDocumentText className="w-3 h-3 mr-3" />
+              Arquivos
             </DashboardSidebarNavLink>
+
+            <DashboardSidebarNavLink href="/app/favorites" active={isActive('/app/favorites')}>
+              <IoMdStarOutline className="w-3 h-3 mr-3" />
+              Favoritos
+            </DashboardSidebarNavLink>
+
             <DashboardSidebarNavLink
               href="/app/settings"
               active={isActive('/app/settings')}
@@ -93,6 +101,7 @@ export function Sidebar() {
               <MixerVerticalIcon className="w-3 h-3 mr-3" />
               Configurações
             </DashboardSidebarNavLink>
+
           </DashboardSidebarNavMain>
         </DashboardSidebarNav>
 

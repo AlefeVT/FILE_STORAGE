@@ -8,13 +8,15 @@ import { SlOptionsVertical } from "react-icons/sl";
 import { BsTrash } from "react-icons/bs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { File } from "@/types/file-doc";
-import { deleteFile, fetchFileData } from "./actions";
+import { deleteFile, favoriteFile, fetchFileData } from "./actions";
 import { IoImagesOutline } from "react-icons/io5";
-import { GrDocumentTxt, GrDocumentPdf, GrDocumentWord } from "react-icons/gr";
+import { GrDocumentTxt, GrDocumentPdf } from "react-icons/gr";
 import { toast } from "@/components/ui/use-toast";
 import { BsFiletypeDocx, BsFiletypeDoc, BsFiletypeSvg, BsFiletypeXlsx } from "react-icons/bs";
 import Image from "next/image";
 import { GrDocumentText } from "react-icons/gr";
+import { IoMdStarOutline } from "react-icons/io";
+import { useSession } from "next-auth/react";
 
 interface FileCardProps {
     file: File;
@@ -25,6 +27,7 @@ export function FileCard({ file, onDeleteFile }: FileCardProps) {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+    const session = useSession();
 
     useEffect(() => {
         prepareFileForDisplayAndDownload(file);
@@ -45,6 +48,20 @@ export function FileCard({ file, onDeleteFile }: FileCardProps) {
             setIsConfirmOpen(false);
         } catch (error) {
             console.error("Error deleting file:", error);
+        }
+    };
+
+    const favoriteFileInDb = async (fileId: string) => {
+        try {
+            const userId = session.data?.user.id;
+            await favoriteFile(userId, fileId);
+            toast({
+                variant: "default",
+                title: "Arquivo Favoritado",
+                description: "O arquivo foi adicionado aos favoritos com sucesso!",
+            });
+        } catch (error) {
+            console.error("Error favoriting file:", error);
         }
     };
 
@@ -128,6 +145,7 @@ export function FileCard({ file, onDeleteFile }: FileCardProps) {
                     <FileCardActions
                         file={file}
                         onDeleteFile={onDeleteFile}
+                        onFavoriteFile={favoriteFileInDb} // Passe a função de favoritar
                         isConfirmOpen={isConfirmOpen}
                         setIsConfirmOpen={setIsConfirmOpen}
                     />
@@ -182,7 +200,13 @@ export function FileCard({ file, onDeleteFile }: FileCardProps) {
     );
 }
 
-function FileCardActions({ setIsConfirmOpen }: FileCardProps & { isConfirmOpen: boolean; setIsConfirmOpen: (isOpen: boolean) => void }) {
+interface FileCardActionsProps extends FileCardProps {
+    onFavoriteFile: (fileId: string) => void;
+    isConfirmOpen: boolean;
+    setIsConfirmOpen: (isOpen: boolean) => void;
+}
+
+function FileCardActions({ file, onDeleteFile, onFavoriteFile, setIsConfirmOpen }: FileCardActionsProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger>
@@ -194,10 +218,19 @@ function FileCardActions({ setIsConfirmOpen }: FileCardProps & { isConfirmOpen: 
                     className="flex items-center gap-1 text-red-600 cursor-pointer"
                 >
                     <BsTrash className="w-4 h-4" />
-                    Delete
+                    Deletar
                 </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
+
+                <DropdownMenuItem
+                    onClick={() => onFavoriteFile(file.id)} // Chama a função de favoritar diretamente
+                    className="flex items-center gap-1 cursor-pointer"
+                >
+                    <IoMdStarOutline className="w-4 h-4" />
+                    Favoritar
+                </DropdownMenuItem>
+                
             </DropdownMenuContent>
         </DropdownMenu>
     );

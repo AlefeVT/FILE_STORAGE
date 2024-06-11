@@ -36,6 +36,7 @@ model User {
   deletedAt            DateTime?         @map("deleted_at")
   sessions             Session[]
   files                File[]
+  favoriteFiles        FavoriteFile[]
 }
 
 model File {
@@ -47,4 +48,14 @@ model File {
   data      Bytes
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  favoriteFiles      FavoriteFile[]
+}
+
+model FavoriteFile {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  fileId    String
+  file      File     @relation(fields: [fileId], references: [id])
+  createdAt DateTime @default(now())
 }

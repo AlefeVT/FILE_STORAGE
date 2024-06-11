@@ -37,3 +37,40 @@ export async function deleteFile(id: string) {
         }
     }
 }
+
+export async function favoriteFile(userId: string, fileId: string) {
+    if (!userId || !fileId) {
+      throw new Error('Invalid or missing userId or fileId');
+    }
+  
+    try {
+      await prisma.favoriteFile.create({
+        data: {
+          userId,
+          fileId,
+        },
+      });
+    } catch (error) {
+      console.error('Error favoriting file:', error);
+      throw new Error('Error favoriting file');
+    }
+  }
+
+  export async function getFavoriteFiles(userId: string) {
+    if (!userId) {
+        throw new Error('Invalid or missing userId');
+    }
+
+    try {
+        const favoriteFiles = await prisma.favoriteFile.findMany({
+            where: { userId },
+            include: {
+                file: true,
+            },
+        });
+        return favoriteFiles.map(favorite => favorite.file);
+    } catch (error) {
+        console.error('Error retrieving favorite files:', error);
+        throw new Error('Error retrieving favorite files');
+    }
+}

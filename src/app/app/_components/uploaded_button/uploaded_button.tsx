@@ -42,21 +42,19 @@ export function UploadedButton({ onNewFile }: UploadedButtonProps) {
     if (!values.file) return;
 
     try {
-      const fileType = values.file.type; // Obtém o tipo de arquivo completo
+      const fileType = values.file.type;
       if (!fileType) throw new Error("Não foi possível determinar o tipo do arquivo");
 
-      // Verificar se o tipo de arquivo é seguro
       const isSafeFileType = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'image/svg+xml', 'image/png', 'image/jpeg', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(fileType);
       if (!isSafeFileType) {
         throw new Error("Tipo de arquivo não seguro. Por favor, envie um PDF, DOC, DOCX ou TXT.");
       }
 
-      // Converter arquivo para Base64
       const fileBase64 = await readFileAsBase64(values.file);
 
       const newFile = await createFile({
         name: values.title,
-        type: fileType, // Salva o tipo completo do arquivo
+        type: fileType, 
         userId: userId!,
         data: fileBase64,
       });
