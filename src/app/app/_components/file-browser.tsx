@@ -1,4 +1,5 @@
 "use client";
+
 import { useSession } from "next-auth/react";
 import { LuLoader2 } from "react-icons/lu";
 import { useEffect, useState } from "react";
@@ -7,15 +8,15 @@ import { FileCard } from "./file-card/file-card";
 import { UploadedButton } from "./uploaded_button/uploaded_button";
 import Image from "next/image";
 import { SearchBar } from "./search-bar.tsx/search-bar";
-import getFiles from "../actions";
-import { getFavoriteFiles } from "./file-card/actions";
+import { getDeletedFiles, getFavoriteFiles, getFiles } from "./file-card/actions";
 
 interface FileBrowserProps {
   title: string;
-  favorites: boolean;
+  favorites?: boolean;
+  deleted?: boolean;
 }
 
-export default function FileBrowser({ title, favorites }: FileBrowserProps) {
+export default function FileBrowser({ title, favorites, deleted }: FileBrowserProps) {
   const { data: session, status } = useSession();
   const userId = session?.user?.id;
 
@@ -27,8 +28,19 @@ export default function FileBrowser({ title, favorites }: FileBrowserProps) {
     async function fetchFiles() {
       if (userId) {
         try {
-          const data = favorites ? await getFavoriteFiles(userId) : await getFiles(userId);
-          setFiles(data);
+          let data;
+          if (deleted) {
+            data = await getDeletedFiles(userId);
+          } else if (favorites) {
+            data = await getFavoriteFiles(userId);
+          } else {
+            data = await getFiles(userId);
+          }
+          const convertedData = data.map((file: any) => ({
+            ...file,
+            data: file.data.toString('utf-8'), 
+          }));
+          setFiles(convertedData);
         } catch (error) {
           console.error('Error fetching files:', error);
         } finally {
@@ -38,13 +50,29 @@ export default function FileBrowser({ title, favorites }: FileBrowserProps) {
     }
 
     fetchFiles();
-  }, [userId]);
+  }, [userId, favorites, deleted]);
 
   const handleNewFile = (newFile: File) => {
     setFiles((prevFiles) => [...prevFiles, newFile]);
   };
 
   const handleDeleteFile = (fileId: string) => {
+    setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+  };
+
+  const handleFavoriteToggle = (fileId: string) => {
+    setFiles((prevFiles) => {
+      if (favorites) {
+        return prevFiles.filter((file) => file.id !== fileId);
+      } else {
+        return prevFiles.map((file) =>
+          file.id === fileId ? { ...file, favorite: false } : file
+        );
+      }
+    });
+  };
+
+  const handleRestoreFile = (fileId: string) => {
     setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
   };
 
@@ -67,7 +95,6 @@ export default function FileBrowser({ title, favorites }: FileBrowserProps) {
         </div>
       </>
     );
-
   }
 
   return (
@@ -93,12 +120,16 @@ export default function FileBrowser({ title, favorites }: FileBrowserProps) {
             />
             <div className="flex flex-col gap-4">
               <div>
-              <h2 className="text-2xl text-center">Você não tem arquivos, carregue um agora.</h2>
+                <h2 className="text-2xl text-center">
+                  {deleted ? "Você não tem arquivo na lixeira." : (favorites ? "Você não tem arquivos favoritados no momento." : "Você não tem arquivos, carregue um agora.")}
+                </h2>
               </div>
 
-              <div className="flex justify-center">
-                <UploadedButton onNewFile={handleNewFile} />
-              </div>
+              {!favorites && !deleted && (
+                <div className="flex justify-center">
+                  <UploadedButton onNewFile={handleNewFile} />
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -109,7 +140,13 @@ export default function FileBrowser({ title, favorites }: FileBrowserProps) {
           <Placeholder />
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredFiles.map((file: File) => (
-              <FileCard key={file.id} file={file} onDeleteFile={handleDeleteFile} />
+              <FileCard 
+                key={file.id} 
+                file={file} 
+                onDeleteFile={handleDeleteFile} 
+                onFavoriteToggle={handleFavoriteToggle} 
+                onRestoreFile={handleRestoreFile} 
+              />
             ))}
           </div>
         </>

@@ -57,6 +57,7 @@ export function UploadedButton({ onNewFile }: UploadedButtonProps) {
         type: fileType, 
         userId: userId!,
         data: fileBase64,
+        status: "ACTIVE",
       });
 
       form.reset();

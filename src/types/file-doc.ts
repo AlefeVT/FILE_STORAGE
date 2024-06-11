@@ -3,7 +3,8 @@ export type File = {
   name: string;
   type: string;
   userId: string;
-  data: Buffer;
+  data: string;
+  status: string;
   createdAt: Date;
   updatedAt: Date;
   };

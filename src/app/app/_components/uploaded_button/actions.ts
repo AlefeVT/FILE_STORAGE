@@ -7,9 +7,10 @@ interface CreateFileInput {
   type: string;
   userId: string;
   data: string; 
+  status: string
 }
 
-export async function createFile({ name, type, userId, data }: CreateFileInput) {
+export async function createFile({ name, type, userId, data, status }: CreateFileInput) {
   const binaryData = Buffer.from(data.split(",")[1], "base64"); 
 
   return await prisma.file.create({
@@ -18,6 +19,7 @@ export async function createFile({ name, type, userId, data }: CreateFileInput) 
       type,
       userId,
       data: binaryData,
+      status,
     },
   });
 }

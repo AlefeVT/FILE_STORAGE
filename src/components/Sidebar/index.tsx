@@ -8,6 +8,7 @@ import { Logo } from "@/components/Logo";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { GrDocumentText } from "react-icons/gr";
 import { IoMdStarOutline } from "react-icons/io";
+import { BsTrash } from "react-icons/bs";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -73,7 +74,11 @@ export function Sidebar() {
     >
 
       <DashboardSidebarHeader>
+        <div className="flex items-center">
         <Logo />
+        <span className="ml-2 font-extrabold">FILE DRIVE</span>
+        </div>
+
         <button
           className="absolute top-0 right-0 p-3"
           onClick={() => setSidebarOpen(false)} 
@@ -92,6 +97,11 @@ export function Sidebar() {
             <DashboardSidebarNavLink href="/app/favorites" active={isActive('/app/favorites')}>
               <IoMdStarOutline className="w-3 h-3 mr-3" />
               Favoritos
+            </DashboardSidebarNavLink>
+
+            <DashboardSidebarNavLink href="/app/trash" active={isActive('/app/trash')}>
+              <BsTrash className="w-3 h-3 mr-3" />
+              Lixeira
             </DashboardSidebarNavLink>
 
             <DashboardSidebarNavLink
