@@ -8,7 +8,9 @@ import { FileCard } from "./file-card/file-card";
 import { UploadedButton } from "./uploaded_button/uploaded_button";
 import Image from "next/image";
 import { SearchBar } from "./search-bar.tsx/search-bar";
-import { getDeletedFiles, getFavoriteFiles, getFiles } from "./file-card/actions";
+import { getDeletedFiles, getFavoriteFiles, getFiles } from "./actions";
+import { DataTable } from "./file-table/file-table";
+import { columns } from "./file-table/columns";
 
 interface FileBrowserProps {
   title: string;
@@ -38,7 +40,7 @@ export default function FileBrowser({ title, favorites, deleted }: FileBrowserPr
           }
           const convertedData = data.map((file: any) => ({
             ...file,
-            data: file.data.toString('utf-8'), 
+            data: file.data.toString('utf-8'),
           }));
           setFiles(convertedData);
         } catch (error) {
@@ -88,8 +90,7 @@ export default function FileBrowser({ title, favorites, deleted }: FileBrowserPr
         <div className="items-center flex flex-col sm:flex-col lg:flex-row sm:space-y-10 lg:space-y-0 justify-between mb-8 space-y-4  ">
           <h2 className="text-lg text-center sm:text-xl text-gray-600">{title}</h2>
           <SearchBar onSearch={setQuery} />
-
-          <div className="">
+          <div>
             <UploadedButton onNewFile={handleNewFile} />
           </div>
         </div>
@@ -135,17 +136,25 @@ export default function FileBrowser({ title, favorites, deleted }: FileBrowserPr
         </>
       )}
 
-      {!isLoading && files && files.length > 0 && (
-        <>
-          <Placeholder />
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+{
+  !isLoading && files && files.length > 0 && (
+    <>
+      <Placeholder />
+      <DataTable
+        columns={columns}
+        data={filteredFiles}
+        onDeleteFile={handleDeleteFile}
+        onFavoriteToggle={handleFavoriteToggle}
+        onRestoreFile={handleRestoreFile}
+      />
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-20 mt-10">
             {filteredFiles.map((file: File) => (
-              <FileCard 
-                key={file.id} 
-                file={file} 
-                onDeleteFile={handleDeleteFile} 
-                onFavoriteToggle={handleFavoriteToggle} 
-                onRestoreFile={handleRestoreFile} 
+              <FileCard
+                key={file.id}
+                file={file}
+                onDeleteFile={handleDeleteFile}
+                onFavoriteToggle={handleFavoriteToggle}
+                onRestoreFile={handleRestoreFile}
               />
             ))}
           </div>
