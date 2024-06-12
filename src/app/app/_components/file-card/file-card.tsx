@@ -1,36 +1,25 @@
+// FileCard.tsx
 "use client";
 
 import { ReactNode, useState, useEffect } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { SlOptionsVertical } from "react-icons/sl";
-import { BsTrash } from "react-icons/bs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { deleteFile, favoriteFile, unfavoriteFile, getFileData, isFileFavorited, restoreFile } from "./actions";
 import { IoImagesOutline } from "react-icons/io5";
 import { GrDocumentTxt, GrDocumentPdf } from "react-icons/gr";
-import { toast } from "@/components/ui/use-toast";
 import { BsFiletypeDocx, BsFiletypeDoc, BsFiletypeSvg, BsFiletypeXlsx } from "react-icons/bs";
 import Image from "next/image";
 import { GrDocumentText } from "react-icons/gr";
-import { IoMdStarOutline, IoMdStar } from "react-icons/io";
-import { useSession } from "next-auth/react";
+import { IoMdStar } from "react-icons/io";
+import { File } from "@/types/file-doc";
+import { ThreePoints } from "../three-points/three-points";
+import { toast } from "@/components/ui/use-toast";
+import { useFileActions } from "./actions";
 
-interface File {
-    id: string;
-    name: string;
-    type: string;
-    data: string;
-    status: string; 
-    favorite?: boolean; 
-}
-
-interface FileCardProps {
+export interface FileCardProps {
     file: File;
     onDeleteFile: (fileId: string) => void;
     onFavoriteToggle: (fileId: string) => void;
-    onRestoreFile: (fileId: string) => void; 
+    onRestoreFile: (fileId: string) => void;
 }
 
 export function FileCard({ file, onDeleteFile, onFavoriteToggle, onRestoreFile }: FileCardProps) {
@@ -38,10 +27,18 @@ export function FileCard({ file, onDeleteFile, onFavoriteToggle, onRestoreFile }
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
     const [isFavorited, setIsFavorited] = useState(false);
-    const session = useSession();
+
+    const {
+        checkIfFavorited,
+        deleteFileFromDb,
+        favoriteFileInDb,
+        unfavoriteFileInDb,
+        restoreFileInDb,
+        prepareFileForDisplayAndDownload,
+    } = useFileActions(file, setIsFavorited, onDeleteFile, onFavoriteToggle, onRestoreFile);
 
     useEffect(() => {
-        prepareFileForDisplayAndDownload(file);
+        prepareFileForDisplayAndDownload(file, setImageUrl, setDownloadUrl);
         checkIfFavorited();
         return () => {
             if (imageUrl) {
@@ -52,132 +49,6 @@ export function FileCard({ file, onDeleteFile, onFavoriteToggle, onRestoreFile }
             }
         };
     }, [file]);
-
-    const checkIfFavorited = async () => {
-        if (session.data?.user.id) {
-            const result = await isFileFavorited(session.data.user.id, file.id);
-            setIsFavorited(result);
-        }
-    };
-
-    const deleteFileFromDb = async (fileId: string) => {
-        try {
-            await deleteFile(fileId);
-            onDeleteFile(fileId);
-            setIsConfirmOpen(false);
-        } catch (error) {
-            console.error("Error deleting file:", error);
-        }
-    };
-
-    const favoriteFileInDb = async (fileId: string) => {
-        try {
-            const userId = session.data?.user.id;
-            await favoriteFile(userId, fileId);
-            setIsFavorited(true);
-            toast({
-                variant: "default",
-                title: "Arquivo Favoritado",
-                description: "O arquivo foi adicionado aos favoritos com sucesso!",
-            });
-            onFavoriteToggle(fileId); 
-        } catch (error: any) {
-            if (error.message.includes("already favorited")) {
-                toast({
-                    variant: "default",
-                    title: "Arquivo já favoritado",
-                    description: "Este arquivo já está na sua lista de favoritos.",
-                });
-            } else {
-                console.error("Error favoriting file:", error);
-                toast({
-                    variant: "destructive",
-                    title: "Erro ao favoritar arquivo",
-                    description: error.message,
-                });
-            }
-        }
-    };
-
-    const unfavoriteFileInDb = async (fileId: string) => {
-        try {
-            const userId = session.data?.user.id;
-            await unfavoriteFile(userId, fileId);
-            setIsFavorited(false);
-            toast({
-                variant: "default",
-                title: "Arquivo Desfavoritado",
-                description: "O arquivo foi removido dos favoritos com sucesso!",
-            });
-            onFavoriteToggle(fileId); 
-        } catch (error: any) {
-            console.error("Error unfavoriting file:", error);
-            toast({
-                variant: "destructive",
-                title: "Erro ao desfavoritar arquivo",
-                description: error.message,
-            });
-        }
-    };
-
-    const restoreFileInDb = async (fileId: string) => {
-        try {
-            await restoreFile(fileId);
-            onRestoreFile(fileId);
-            toast({
-                variant: "default",
-                title: "Arquivo Restaurado",
-                description: "O arquivo foi restaurado com sucesso!",
-            });
-        } catch (error) {
-            console.error("Error restoring file:", error);
-            toast({
-                variant: "destructive",
-                title: "Erro ao restaurar arquivo",
-                description: "Não foi possível restaurar o arquivo, tente novamente mais tarde.",
-            });
-        }
-    };
-
-    const prepareFileForDisplayAndDownload = async (file: File) => {
-        try {
-            const fileData = await getFileData(file.id);
-
-            const isBase64 = (str: string) => {
-                try {
-                    return btoa(atob(str)) === str;
-                } catch (err) {
-                    return false;
-                }
-            };
-
-            if (!isBase64(fileData.data)) {
-                throw new Error("Invalid base64 string");
-            }
-
-            const binaryString = atob(fileData.data);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-
-            const blob = new Blob([bytes], { type: file.type });
-            const url = URL.createObjectURL(blob);
-            setDownloadUrl(url);
-
-            if (file.type.startsWith("image/")) {
-                setImageUrl(url);
-            }
-        } catch (error) {
-            console.error("Error preparing file:", error);
-            toast({
-                variant: "destructive",
-                title: "Erro ao preparar arquivo",
-                description: "Não foi possível preparar o arquivo, tente novamente mais tarde.",
-            });
-        }
-    };
 
     const handleDownload = () => {
         if (downloadUrl) {
@@ -217,16 +88,18 @@ export function FileCard({ file, onDeleteFile, onFavoriteToggle, onRestoreFile }
                     {file.name}
                 </CardTitle>
                 <div className="absolute top-2 right-2">
-                    <FileCardActions
+                    <ThreePoints
                         file={file}
                         onDeleteFile={onDeleteFile}
                         onFavoriteFile={favoriteFileInDb}
                         onUnfavoriteFile={unfavoriteFileInDb}
-                        onRestoreFile={restoreFileInDb} 
+                        onRestoreFile={restoreFileInDb}
                         onFavoriteToggle={onFavoriteToggle}
                         isFavorited={isFavorited}
                         isConfirmOpen={isConfirmOpen}
                         setIsConfirmOpen={setIsConfirmOpen}
+                        onDownload={handleDownload}
+                        onView={handleView}
                     />
                 </div>
             </CardHeader>
@@ -246,10 +119,10 @@ export function FileCard({ file, onDeleteFile, onFavoriteToggle, onRestoreFile }
                 )}
             </CardContent>
 
-            <CardFooter className="flex justify-center gap-2">
-                <Button onClick={handleDownload}>Baixar</Button>
-                {file.type === "application/pdf" && <Button onClick={handleView}>Visualizar</Button>}
+            <CardFooter>
+                <div className="text-sm text-gray-500">Documento carregado em: {new Date(file.createdAt).toLocaleDateString()}</div>
             </CardFooter>
+
             <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -276,72 +149,5 @@ export function FileCard({ file, onDeleteFile, onFavoriteToggle, onRestoreFile }
                 </AlertDialogContent>
             </AlertDialog>
         </Card>
-    );
-}
-
-interface FileCardActionsProps extends FileCardProps {
-    onFavoriteFile: (fileId: string) => void;
-    onUnfavoriteFile: (fileId: string) => void;
-    onRestoreFile: (fileId: string) => void; 
-    isFavorited: boolean;
-    isConfirmOpen: boolean;
-    setIsConfirmOpen: (isOpen: boolean) => void;
-}
-
-function FileCardActions({ file, onDeleteFile, onFavoriteFile, onUnfavoriteFile, onRestoreFile, onFavoriteToggle, isFavorited, setIsConfirmOpen }: FileCardActionsProps) {
-    if (file.status === "DELETED") {
-        return (
-            <DropdownMenu>
-                <DropdownMenuTrigger>
-                    <SlOptionsVertical />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem
-                        onClick={() => onRestoreFile(file.id)}
-                        className="flex items-center gap-1 cursor-pointer"
-                    >
-                        <BsTrash className="w-4 h-4" />
-                        Restaurar
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        );
-    }
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger>
-                <SlOptionsVertical />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                <DropdownMenuItem
-                    onClick={() => setIsConfirmOpen(true)}
-                    className="flex items-center gap-1 text-red-600 cursor-pointer"
-                >
-                    <BsTrash className="w-4 h-4" />
-                    Deletar
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
-                {isFavorited ? (
-                    <DropdownMenuItem
-                        onClick={() => onUnfavoriteFile(file.id)}
-                        className="flex items-center gap-1 cursor-pointer"
-                    >
-                        <IoMdStar className="w-4 h-4 text-yellow-500" />
-                        Retirar dos Favoritos
-                    </DropdownMenuItem>
-                ) : (
-                    <DropdownMenuItem
-                        onClick={() => onFavoriteFile(file.id)}
-                        className="flex items-center gap-1 cursor-pointer"
-                    >
-                        <IoMdStarOutline className="w-4 h-4" />
-                        Favoritar
-                    </DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
     );
 }

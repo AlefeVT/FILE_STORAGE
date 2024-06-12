@@ -15,7 +15,12 @@ export default function DashboardLayout({
         </div>
         <main className='w-full h-screen'>
           <Header />
-          {children}
+
+          <div className="overflow-y-auto h-screen">
+            {children}
+          </div>
+
+
         </main>
       </div>
     </ClientSideProvider>

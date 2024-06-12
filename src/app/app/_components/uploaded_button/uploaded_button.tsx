@@ -69,7 +69,7 @@ export function UploadedButton({ onNewFile }: UploadedButtonProps) {
         description: "Seu arquivo foi enviado com sucesso!",
       });
 
-      onNewFile(newFile);
+      onNewFile(newFile as any);
     } catch (err) {
       console.log(err);
       toast({
