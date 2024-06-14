@@ -1,8 +1,7 @@
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from 'bcrypt';
 import { prisma } from "../../database/prisma";
-import NextAuth, { Session, User } from "next-auth";
-import { JWT } from "next-auth/jwt";
 
 const authOptions = {
   providers: [
@@ -13,8 +12,6 @@ const authOptions = {
         password: { label: "Password", type: "password", placeholder: "*****" },
       },
       async authorize(credentials, req) {
-        console.log(credentials);
-
         if (!credentials) {
           return null;
         }
@@ -49,26 +46,23 @@ const authOptions = {
     }),
   ],
   pages: {
-    signIn: "auth/login",
+    signIn: "/auth/login",
   },
   secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   callbacks: {
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token }: any) {
       if (token) {
-        session.user.id = token.id as string;
+        session.user.id = token.id;
       }
       return session;
     },
-    async jwt({ token, user }: { token: JWT; user?: User }) {
+    async jwt({ token, user }: any) {
       if (user) {
-        token.id = (user as any).id;
+        token.id = user.id;
       }
       return token;
     },
   },
 };
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
-export default handler;
+export default NextAuth(authOptions);
