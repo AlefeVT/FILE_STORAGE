@@ -140,13 +140,13 @@ export default function FileBrowser({ title, favorites, deleted }: FileBrowserPr
   !isLoading && files && files.length > 0 && (
     <>
       <Placeholder />
-      <DataTable
+      {/* <DataTable
         columns={columns}
         data={filteredFiles}
         onDeleteFile={handleDeleteFile}
         onFavoriteToggle={handleFavoriteToggle}
         onRestoreFile={handleRestoreFile}
-      />
+      /> */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-20 mt-10">
             {filteredFiles.map((file: File) => (
               <FileCard

@@ -104,13 +104,13 @@ export function Sidebar() {
               Lixeira
             </DashboardSidebarNavLink>
 
-            <DashboardSidebarNavLink
+            {/* <DashboardSidebarNavLink
               href="/app/settings"
               active={isActive('/app/settings')}
             >
               <MixerVerticalIcon className="w-3 h-3 mr-3" />
               Configurações
-            </DashboardSidebarNavLink>
+            </DashboardSidebarNavLink> */}
 
           </DashboardSidebarNavMain>
         </DashboardSidebarNav>
