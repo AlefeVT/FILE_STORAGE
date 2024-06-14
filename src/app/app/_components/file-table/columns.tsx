@@ -106,7 +106,7 @@ export const columns: ColumnDef<File>[] = [
             return (
                 <ThreePoints
                     file={row.original}
-                    onDeleteFile={onDeleteFile}
+                    onDeleteFile={deleteFileFromDb}
                     onFavoriteFile={favoriteFileInDb}
                     onUnfavoriteFile={unfavoriteFileInDb}
                     onRestoreFile={restoreFileInDb}

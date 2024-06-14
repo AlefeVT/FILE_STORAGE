@@ -46,7 +46,7 @@ export function UserDropDown({ user }: UserDropDownProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <Link href="/app/settings">
+          {/* <Link href="/app/settings">
             <DropdownMenuItem>
               <MixerVerticalIcon className="w-3 h-3 mr-3" />
               Configurações
@@ -58,7 +58,7 @@ export function UserDropDown({ user }: UserDropDownProps) {
               <RocketIcon className="w-3 h-3 mr-3" />
               Upgrade
             </DropdownMenuItem>
-          </Link>
+          </Link> */}
 
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
