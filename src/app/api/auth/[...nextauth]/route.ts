@@ -1,17 +1,19 @@
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import { NextApiRequest, NextApiResponse } from 'next';
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcrypt';
-import { prisma } from "../../database/prisma";
+import { NextAuthOptions } from 'next-auth';
+import { prisma } from '../../database/prisma';
 
-const authOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "text", placeholder: "jsmith" },
-        password: { label: "Password", type: "password", placeholder: "*****" },
+        email: { label: 'Email', type: 'text', placeholder: 'jsmith' },
+        password: { label: 'Password', type: 'password', placeholder: '*****' },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials) {
           return null;
         }
@@ -46,17 +48,17 @@ const authOptions = {
     }),
   ],
   pages: {
-    signIn: "/auth/login",
+    signIn: '/auth/login',
   },
   secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   callbacks: {
-    async session({ session, token }: any) {
+    async session({ session, token }) {
       if (token) {
-        session.user.id = token.id;
+        session.user.id = token.id as string;
       }
       return session;
     },
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
@@ -65,4 +67,4 @@ const authOptions = {
   },
 };
 
-export default NextAuth(authOptions);
+export default (req: NextApiRequest, res: NextApiResponse) => NextAuth(req, res, authOptions);
